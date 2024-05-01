@@ -1,5 +1,7 @@
 using Distributed
-addprocs(20)
+using SlurmClusterManager
+addprocs(SlurmManager())
+println(workers())
 using Plots
 @everywhere begin
     using Polynomials
