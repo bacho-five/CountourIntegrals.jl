@@ -156,7 +156,7 @@ function progettoparallelo(b)
     return Z
 end
 @everywhere begin
-    n = 30
+    n = 5
     b = zeros(n, 1)
     b[1] = 1
 end
