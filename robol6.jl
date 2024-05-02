@@ -4,9 +4,10 @@ addprocs(SlurmManager())
 println(workers())
 using Plots
 using MAT
-A = matread("bcsstk01.mat")["Problem"]["A"]
 
 @everywhere begin
+    using MAT
+    A = matread("bcsstk01.mat")["Problem"]["A"]
     A = Matrix(A)
     using Polynomials
     using LinearAlgebra
