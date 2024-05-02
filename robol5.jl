@@ -99,12 +99,7 @@ function ellipjc(u, L, flag)
     end
     return sn, cn, dn
 end
-function utile2(Kp, K, N, L, m, M, k, Id, A, b, f, X)
-    t = 0.5im .* Kp .- K .+ (0.5:N) .* 2 .* K ./ N
-    u, cn, dn = ellipjc(t, L, 0)
-    w = (m * M)^(1 / 4) * ((1 / k .+ u) ./ (1 / k .- u))
-    dzdt = cn .* dn ./ (1 / k .- u) .^ 2
-    S = 0
+function utile(X, S, b, A, w, Id, f, dzdt, K, m, M, N, k)
     for j = 1:N
         po = (b' * A * (((w[j]^2) * Id - A) \ b))
         S = S + (f(w[j]^2) / w[j]) * po * dzdt[j]
@@ -135,17 +130,22 @@ function progetto(A, b)
     k = ((M / m)^(1 / 4) - 1) / ((M / m)^(1 / 4) + 1)
     L = -log(k) / pi
     K, Kp = ellipkkp(L)
-    utile2(Kp, K, 5, L, m, M, k, Id, A, b, f, X)
-    for N = 5:5:30
+    #utile2(Kp, K, 5, L, m, M, k, Id, A, b, f, X)
+    for N = 5:5:35
+        t = 0.5im .* Kp .- K .+ (0.5:N) .* 2 .* K ./ N
+        u, cn, dn = ellipjc(t, L, 0)
+        w = (m * M)^(1 / 4) * ((1 / k .+ u) ./ (1 / k .- u))
+        dzdt = cn .* dn ./ (1 / k .- u) .^ 2
+        S = 0
         o = Int64(N / 5)
-        Z[o] = @elapsed utile2(Kp, K, N, L, m, M, k, Id, A, b, f, X)
+        Z[o] = @elapsed utile(X, S, b, A, w, Id, f, dzdt, K, m, M, N, k)
     end
 end
 n = size(A, 1)
 b = zeros(n)
 b[1] = 1
-Z = zeros(6, 1)
+Z = zeros(7, 1)
 progetto(A, vec(b))
-x = 1:6
+x = 1:7
 plot(x, Z, title="Tempi con un singolo processore", yaxis=:log)
 png("tempi1")
