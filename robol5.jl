@@ -136,7 +136,7 @@ function progetto(A, b)
     L = -log(k) / pi
     K, Kp = ellipkkp(L)
     utile2(Kp, K, 5, L, m, M, k, Id, A, b, f, X)
-    for N = 5:5:20
+    for N = 5:5:30
         o = Int64(N / 5)
         Z[o] = @elapsed utile2(Kp, K, N, L, m, M, k, Id, A, b, f, X)
     end
@@ -144,8 +144,8 @@ end
 n = size(A, 1)
 b = zeros(n)
 b[1] = 1
-Z = zeros(4)
+Z = zeros(6, 1)
 progetto(A, vec(b))
-x = range(5, 20, length=4);
-plot(x, Z)
+x = 1:6
+plot(x, Z, title="Tempi con un singolo processore", yaxis=:log)
 png("tempi1")
