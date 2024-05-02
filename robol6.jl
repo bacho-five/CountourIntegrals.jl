@@ -5,9 +5,9 @@ println(workers())
 using Plots
 using MAT
 A = matread("bcsstk01.mat")["Problem"]["A"]
-A = Matrix(A)
 
 @everywhere begin
+    A = Matrix(A)
     using Polynomials
     using LinearAlgebra
     using SharedArrays
