@@ -161,6 +161,6 @@ end
 end
 Z = zeros(4)
 progettoparallelo(A, vec(b))
-x = range(5, 20, length=4);
+x = range(5, 15, length=3);
 plot(x, Z)
 png("solutions")
