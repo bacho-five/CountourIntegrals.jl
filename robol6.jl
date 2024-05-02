@@ -138,7 +138,7 @@ function progettoparallelo(A, b)
         L = -log(k) / pi
         K, Kp = ellipkkp(L)
     end
-    for N = 5:5:30
+    for N = 5:5:35
         Y = SharedArray{ComplexF64}(40)
         @everywhere begin
             N1 = $N
@@ -157,8 +157,8 @@ end
     b = zeros(n, 1)
     b[1] = 1
 end
-Z = zeros(6, 1)
+Z = zeros(7, 1)
 progettoparallelo(A, vec(b))
-x = 1:6
-plot(x, Z, title="Tempi in parallelo", yaxis=:log)
+x = 1:7
+plot(x, Z, title="Tempi con un singolo processore", yaxis=:log)
 png("solutions")
