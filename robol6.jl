@@ -108,23 +108,15 @@ using MAT
         return sn, cn, dn
     end
 end
-function utile(N, Kp, K, L, m, M, Id, A, b, f)
-    Y = SharedArray{ComplexF64}(35)
-    @everywhere begin
-        N1 = $N
-        t = 0.5im .* Kp .- K .+ (0.5:N1) .* 2 .* K ./ N1
-        u, cn, dn = ellipjc(t, L, 0)
-        w = (m * M)^(1 / 4) * ((1 / k .+ u) ./ (1 / k .- u))
-        dzdt = cn .* dn ./ (1 / k .- u) .^ 2
-    end
-    @sync @distributed for j = 1:N1
+function utile(X, Y, b, A, w, Id, f, dzdt, K, m, M, N, k)
+    @sync @distributed for j = 1:N
         po = (b' * A * (((w[j]^2) * Id - A) \ b))
         Y[j] += (f(w[j]^2) / w[j]) * po * dzdt[j]
     end
     S = sum(Y)
     S = -8 * K * (m * M)^(1 / 4) * imag(S) / (k * pi * N)
     error = norm(X .- S) / norm(X)
-    println(N1, " ", error)
+    println(N, " ", error)
 end
 function progettoparallelo(A, b)
     @everywhere begin
@@ -146,20 +138,27 @@ function progettoparallelo(A, b)
         L = -log(k) / pi
         K, Kp = ellipkkp(L)
     end
-    #Y = SharedArray{ComplexF64}(20);
-    for N = 5:5:35
+    for N = 5:5:30
+        Y = SharedArray{ComplexF64}(40)
+        @everywhere begin
+            N1 = $N
+            t = 0.5im .* Kp .- K .+ (0.5:N1) .* 2 .* K ./ N1
+            u, cn, dn = ellipjc(t, L, 0)
+            w = (m * M)^(1 / 4) * ((1 / k .+ u) ./ (1 / k .- u))
+            dzdt = cn .* dn ./ (1 / k .- u) .^ 2
+        end
         o = Int64(N / 5)
-        Z[o] = @elapsed utile(N, Kp, K, L, m, M, Id, A, b, f)
+        Z[o] = @elapsed utile(X, Y, b, A, w, Id, f, dzdt, K, m, M, N, k)
     end
     return Z
 end
 @everywhere begin
-    n = size(A,1)
+    n = size(A, 1)
     b = zeros(n, 1)
     b[1] = 1
 end
-Z = zeros(7, 1)
+Z = zeros(6, 1)
 progettoparallelo(A, vec(b))
-x = 1:7
-plot(x, Z, title="Tempi con un singolo processore", yaxis=:log)
+x = 1:6
+plot(x, Z, title="Tempi in parallelo", yaxis=:log)
 png("solutions")
