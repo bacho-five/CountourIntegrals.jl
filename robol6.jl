@@ -146,7 +146,7 @@ function progettoparallelo(A, b)
         K, Kp = ellipkkp(L)
     end
     #Y = SharedArray{ComplexF64}(20);
-    for N = 5:5:20
+    for N = 5:5:15
         o = Int64(N / 5)
         Z[o] = @elapsed utile(N, Kp, K, L, m, M, Id, A, b, f)
     end
