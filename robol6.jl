@@ -109,7 +109,7 @@ using MAT
     end
 end
 function utile(N, Kp, K, L, m, M, Id, A, b, f)
-    Y = SharedArray{ComplexF64}(40)
+    Y = SharedArray{ComplexF64}(35)
     @everywhere begin
         N1 = $N
         t = 0.5im .* Kp .- K .+ (0.5:N1) .* 2 .* K ./ N1
@@ -147,7 +147,7 @@ function progettoparallelo(A, b)
         K, Kp = ellipkkp(L)
     end
     #Y = SharedArray{ComplexF64}(20);
-    for N = 5:5:15
+    for N = 5:5:35
         o = Int64(N / 5)
         Z[o] = @elapsed utile(N, Kp, K, L, m, M, Id, A, b, f)
     end
@@ -158,8 +158,8 @@ end
     b = zeros(n, 1)
     b[1] = 1
 end
-Z = zeros(4)
+Z = zeros(7, 1)
 progettoparallelo(A, vec(b))
-x = range(5, 15, length=3);
-plot(x, Z)
+x = 1:7
+plot(x, Z, title="Tempi con un singolo processore", yaxis=:log)
 png("solutions")
