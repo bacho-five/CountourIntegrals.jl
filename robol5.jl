@@ -148,4 +148,4 @@ Z = zeros(4)
 progetto(A, vec(b))
 x = range(5, 20, length=4);
 plot(x, Z)
-png("solutions")
+png("tempi1")
