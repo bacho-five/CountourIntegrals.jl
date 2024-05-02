@@ -154,9 +154,7 @@ function progettoparallelo(A, b)
     return Z
 end
 @everywhere begin
-    a = [1 2 3 4 5 6 8]
-    A = Diagonal(vec(a))
-    n = 7
+    n = size(A,1)
     b = zeros(n, 1)
     b[1] = 1
 end
