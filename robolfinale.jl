@@ -1,10 +1,10 @@
 using Distributed
-addprocs(20)
+addprocs(10)
 using Plots
 
 @everywhere begin
     using MAT
-    A = matread("matrice3.mat")["Problem"]["A"]
+    A = matread("matrice1.mat")["Problem"]["A"]
     A = Matrix(A)
     using Polynomials
     using LinearAlgebra
@@ -106,7 +106,7 @@ using Plots
     end
 end
 function utile(X, Y, b, A, w, Id, f, dzdt, K, m, M, N, k)
-    @sync @distributed for j = 1:N
+    @sync @async for j = 1:N
         po = (b' * A * (((w[j]^2) * Id - A) \ b))
         Y[j] += (f(w[j]^2) / w[j]) * po * dzdt[j]
     end
@@ -135,8 +135,8 @@ function progettoparallelo(A, b)
         L = -log(k) / pi
         K, Kp = ellipkkp(L)
     end
-    for N = 5:5:35
-        Y = SharedArray{ComplexF64}(35)
+    for N = 5:5:20
+        Y = SharedArray{ComplexF64}(20)
         @everywhere begin
             N1 = $N
             t = 0.5im .* Kp .- K .+ (0.5:N1) .* 2 .* K ./ N1
@@ -144,13 +144,13 @@ function progettoparallelo(A, b)
             w = (m * M)^(1 / 4) * ((1 / k .+ u) ./ (1 / k .- u))
             dzdt = cn .* dn ./ (1 / k .- u) .^ 2
         end
-        # utile(X, Y1, b, A, w, Id, f, dzdt, K, m, M, N, k)
+       # utile(X, Y, b, A, w, Id, f, dzdt, K, m, M, N, k)
         o = Int64(N / 5)
         Z2[o] = @elapsed utile(X, Y, b, A, w, Id, f, dzdt, K, m, M, N, k)
     end
+    return Z
 end
-
-function utile1(X, S, b, A, w, Id, f, dzdt, K, m, M, N, k)
+function utile(X, S, b, A, w, Id, f, dzdt, K, m, M, N, k)
     for j = 1:N
         po = (b' * A * (((w[j]^2) * Id - A) \ b))
         S = S + (f(w[j]^2) / w[j]) * po * dzdt[j]
@@ -182,14 +182,14 @@ function progetto(A, b)
     L = -log(k) / pi
     K, Kp = ellipkkp(L)
     #utile2(Kp, K, 5, L, m, M, k, Id, A, b, f, X)
-    for N = 5:5:35
+    for N = 5:5:20
         t = 0.5im .* Kp .- K .+ (0.5:N) .* 2 .* K ./ N
         u, cn, dn = ellipjc(t, L, 0)
         w = (m * M)^(1 / 4) * ((1 / k .+ u) ./ (1 / k .- u))
         dzdt = cn .* dn ./ (1 / k .- u) .^ 2
         S = 0
         o = Int64(N / 5)
-        Z1[o] = @elapsed utile1(X, S, b, A, w, Id, f, dzdt, K, m, M, N, k)
+        Z1[o] = @elapsed utile(X, S, b, A, w, Id, f, dzdt, K, m, M, N, k)
     end
 end
 @everywhere begin
@@ -197,9 +197,10 @@ end
     b = zeros(n, 1)
     b[1] = 1
 end
-Z1 = zeros(7, 1)
-Z2 = zeros(7, 1)
+Z1 = zeros(4, 1)
+Z2 = zeros(4, 1)
+progetto(A,b)
 progettoparallelo(A, vec(b))
-x = 1:7
+x = 1:4
 plot(x, [Z1, Z2], title="Comparazione dei tempi", label=["Tempi con un nodo" "Tempi in parallelo"])
-png("s1.4")
+png("s1.6")
